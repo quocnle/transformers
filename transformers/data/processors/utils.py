@@ -18,6 +18,7 @@ import csv
 import sys
 import copy
 import json
+import pandas as pd
 
 class InputExample(object):
     """
@@ -110,11 +111,9 @@ class DataProcessor(object):
     @classmethod
     def _read_tsv(cls, input_file, quotechar=None):
         """Reads a tab separated value file."""
-        with open(input_file, "r", encoding="utf-8-sig") as f:
-            reader = csv.reader(f, delimiter="\t", quotechar=quotechar)
-            lines = []
-            for line in reader:
-                if sys.version_info[0] == 2:
-                    line = list(unicode(cell, 'utf-8') for cell in line)
-                lines.append(line)
-            return lines
+        train = pd.read_csv(input_file, sep='\t')
+
+        cols = [c for c in train.columns.tolist() if c != 'message']
+        messages = train['message'].map(lambda x: x if x == x else 'ok').tolist()
+
+        return list(zip(messages, train[cols].values.tolist()))
